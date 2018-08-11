@@ -1,3 +1,4 @@
+
 import torch.nn as nn
 import math
 #from utee import misc
@@ -49,6 +50,7 @@ class BasicBlock(nn.Module):
 
         out = self.relu(out)
 
+
         return out
 
 
@@ -78,6 +80,7 @@ class Bottleneck(nn.Module):
 
         out = self.group1(x) + residual
         out = self.relu(out)
+
 
         return out
 
@@ -197,3 +200,4 @@ def resnet152(pretrained=False, model_root=None, **kwargs):
     if pretrained:
         misc.load_state_dict(model, model_urls['resnet152'], model_root)
     return model
+

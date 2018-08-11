@@ -33,7 +33,9 @@ class MyDataSet(Dataset):
                 
     def __getitem__(self, index):
         imgname, label = self.data[index]
+
         img=Image.open(imgname)
+
         img = self.transform(img)
         return img, label
 
@@ -62,6 +64,7 @@ class LfwDataSet(Dataset):
                 sameflag = 0
                 name1 = p[0] + '/' + p[0] + '_' + '{:04}.jpg'.format(int(p[1]))
                 name2 = p[2] + '/' + p[2] + '_' + '{:04}.jpg'.format(int(p[3]))
+
             imgname1 = self.root + name1
             imgname2 = self.root + name2
             print(imgname1,imgname2,sameflag)
@@ -102,6 +105,7 @@ class YtfDataSet(Dataset):
                 sameflag = 0
                 name1 = p[0] + '/' + p[0] + '_' + '{:04}.jpg'.format(int(p[1]))
                 name2 = p[2] + '/' + p[2] + '_' + '{:04}.jpg'.format(int(p[3]))
+
             imgname1 = self.root + name1 
             imgname2 = self.root + name2 
             self.data.append([imgname1,imgname2,sameflag])
@@ -135,6 +139,7 @@ def Test():
     inputdata, target = dataset.__getitem__(2)
     img=inputdata.data.cpu().numpy()
     cv2.write("1.jpg",img)
+
 
 
 if __name__ == "__main__":

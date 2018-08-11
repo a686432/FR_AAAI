@@ -26,6 +26,7 @@ from resnet import resnet50
 from net import sphere64a
 
 
+
 parser = argparse.ArgumentParser(description='Face recognition with CenterLoss')
 parser.add_argument('--lr', default=0.001, type=float, help='learning rate')
 parser.add_argument('--lrc', default=0.5, type=float, help="lr for center loss")
@@ -41,6 +42,7 @@ parser.add_argument('--number_of_class','-nc', default=79077,type=int, help="The
 args = parser.parse_args()
 
 
+
 transform = transforms.Compose([
         # transforms.ColorJitter(brightness=0.3, contrast=0.3, saturation=0.3, hue=0.3),
         # transforms.RandomRotation(30),
@@ -54,6 +56,7 @@ eval_epoch=0
 iter_num=0
 Best_Accu=0
 savefile = "../dict2.cl"
+
 lr=args.lr
 margin=args.m
 number_of_class=args.number_of_class
@@ -86,6 +89,7 @@ Best_Accu = 0.0
 train_loss = 0
 correct = 0
 total = 0
+
 os.environ["CUDA_VISIBLE_DEVICES"] = "0,1,2,3"
 gpu_ids = [0,1,2,3]
 torch.cuda.set_device(gpu_ids[0])
@@ -106,14 +110,18 @@ device = torch.device("cuda" if use_cuda else "cpu")
 #     transforms.Normalize((0.1307,), (0.3081,))]))
 # test_loader = DataLoader(testset, batch_size=64, shuffle=False, num_workers=4)
 
+
 trainset = MyDataSet(root="/data3/jdq/imgc/",max_number_class=number_of_class, transform=transform)
+
 train_loader = torch.utils.data.DataLoader(trainset, batch_size=128, shuffle=True, num_workers=32)
 
 evalset = LfwDataSet(root="/data3/jdq/lfwc/",pairfile="../pair.txt",transform=transforms.Compose([
     transforms.Resize((112, 96)),
     transforms.ToTensor(),
     transforms.Normalize(mean=(0.5, 0.5, 0.5), std=(0.5, 0.5, 0.5))]))
+
 eval_loader = torch.utils.data.DataLoader(evalset, batch_size=1, shuffle=False, num_workers=16)
+
 # Model
 print('==> Building model..')
 #model=None
@@ -127,6 +135,7 @@ elif mainloss == 'mcocoloss':
     model = sphere64a(linear='mCocoLinear',scale=args.s,num_classes=number_of_class)
 else: 
     model = sphere64a(num_classes=number_of_class)
+
 model = model.to(device)
 model = torch.nn.DataParallel(model,device_ids=gpu_ids)
 cudnn.benchmark = True
@@ -164,6 +173,7 @@ if auxiliaryfunc==True:
     optimzer4loss = optim.SGD(lossfunction2.parameters(), lr =0.5)
 
 
+
 def train(epoch):     
     global lr, eval_epoch, iter_num,train_loss,total,correct
     print ("Training... Epoch = %d" % epoch)
@@ -171,11 +181,13 @@ def train(epoch):
   
     for batch_idx,(data, target) in enumerate(train_loader):
         data, target =  data.to(device), target.to(device)
+
         ip1, pred = model(data)
         # loss = nllloss(pred, target) + loss_weight * centerloss(target, ip1)
         # loss=criterion[0](pred, target)+criterion[1](ip1)
         
         if auxiliaryfunc:
+
             loss=criterion[0](pred, target)+criterion[1](ip1)
             optimzer4nn.zero_grad()
             optimzer4loss.zero_grad()
@@ -183,18 +195,23 @@ def train(epoch):
             loss.backward()
             optimizer4nn.module.step()
             optimzer4loss.step()
+
             optimizer4l.step()
         else:
             loss=criterion[0](pred, target)
             optimizer4nn.module.zero_grad()
+
             optimizer4nn.zero_grad()
+
             #optimizer4l.zero_grad()
             loss.backward()
             optimizer4nn.module.step()
             #optimizer4l.step()
 
+
         # ip1_loader.append(ip1)
         # idx_loader.append((target))
+
         train_loss += loss.item()
         if mainloss=="A-softmax":
             _, predicted = pred[0].max(1)
@@ -202,14 +219,17 @@ def train(epoch):
             _, predicted = pred.max(1)
         total += target.size(0)
         correct += predicted.eq(target).sum().item()
+
         
         sys.stdout.write("%d/%d Loss: %.3f | Acc: %.3f%% (%d/%d)" 
             % (batch_idx+1,len(train_loader),train_loss/(iter_num%5000+1), 100.*correct/total, correct, total))
+
         if batch_idx < len(train_loader) - 1:
             sys.stdout.write('\r')
         else:
             sys.stdout.write('\n')
         sys.stdout.flush()
+
         iter_num+=1
 
         if (iter_num)%5000==0:
@@ -239,9 +259,11 @@ def train(epoch):
         #visualize(feat.data.cpu().numpy(),labels.data.cpu().numpy(),epoch)
     
 
+
    
 
 def eval(epoch):
+
     global Best_Accu,lr
     predicts = []
     model.eval()
@@ -259,6 +281,7 @@ def eval(epoch):
     accuracy = []
     thd = []
     # folds = lfw.KFold(n=6000, n_folds=10)
+
     thresholds = np.arange(-1.0, 1.0, 0.005)
     #predicts = np.array(map(lambda line: line.strip('\n').split('\t'), predicts))
     #print(predicts)
@@ -293,6 +316,7 @@ def eval(epoch):
         #         param_group['lr'] = lr
         #     not_save = 0
         #     print("Modify lr to %.5f" % lr)
+
 # def test(epoch):
 #     global Best_Accu
 #     print ("Test... Epoch = %d" % epoch)
@@ -350,5 +374,6 @@ for epoch in range(500):
     # print optimizer4nn.param_groups[0]['lr']
     train(epoch+1)
     #eval(epoch+1)
+
     #test(epoch+1)
 

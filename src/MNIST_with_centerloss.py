@@ -60,7 +60,9 @@ def visualize(feat, labels, epoch, train=True):
 
 
 def train(epoch):
+
     print ("Training... Epoch = %d" % epoch)
+
     ip1_loader = []
     idx_loader = []
     model.train()

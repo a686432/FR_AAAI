@@ -29,10 +29,12 @@ def eval_acc(threshold, diff):
         same = 1 if float(d[2]) > threshold else 0
         y_predict.append(same)
         y_true.append(int(d[3]))
+
     y_true = np.array(y_true)
     y_predict = np.array(y_predict)
     accuracy = 1.0 * np.count_nonzero(y_true == y_predict) / len(y_true)
     return accuracy
+
 
 def eval_accd(threshold, diff):
     y_true = []
@@ -49,6 +51,7 @@ def eval_accd(threshold, diff):
     #         print(diff[idx])
 
     return accuracy
+
 
 
 def find_best_threshold(thresholds, predicts):
