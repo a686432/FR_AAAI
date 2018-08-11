@@ -83,6 +83,9 @@ for lf in losstype:
     print (lf)
 
 Best_Accu = 0.0
+train_loss = 0
+correct = 0
+total = 0
 os.environ["CUDA_VISIBLE_DEVICES"] = "0,1,2,3"
 gpu_ids = [0,1,2,3]
 torch.cuda.set_device(gpu_ids[0])
@@ -162,12 +165,10 @@ if auxiliaryfunc==True:
 
 
 def train(epoch):     
-    global lr, eval_epoch, iter_num
+    global lr, eval_epoch, iter_num,train_loss,total,correct
     print ("Training... Epoch = %d" % epoch)
     model.train()
-    train_loss = 0
-    correct = 0
-    total = 0
+  
     for batch_idx,(data, target) in enumerate(train_loader):
         data, target =  data.to(device), target.to(device)
         ip1, pred = model(data)
@@ -228,7 +229,7 @@ def train(epoch):
             for param_group in optimizer4nn.module.param_groups:
                 param_group['lr'] = lr
             print("Modify lr to %.5f" % lr)
-        if iter_num==150000:
+        if iter_num==30000:
             lr /= 10
             for param_group in optimizer4nn.module.param_groups:
                 param_group['lr'] = lr
